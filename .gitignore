@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Kiro (keep steering/skills, ignore runtime)
+.kiro/.vscode/
+
+# Netlify
+.netlify/

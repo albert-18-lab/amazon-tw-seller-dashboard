@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMZN US MKT | TW SELLER DASHBOARD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0D1117;--surface:#161B22;--elevated:#21262D;--border:#30363D;
+  --t1:#FFFFFF;--t2:#C9D1D9;--t3:#8B95A1;
+  --accent:#FF8C00;--green:#3FB950;--red:#F85149;--blue:#58A6FF;
+  --font:'Inter','Noto Sans TC',-apple-system,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:52px}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:none}
+.nav-inner{max-width:1440px;margin:0 auto;display:flex;align-items:center;padding:12px 28px;gap:6px}
+.nav-brand{font-weight:800;font-size:.85rem;color:var(--t1);margin-right:20px;white-space:nowrap;letter-spacing:.5px}
+.nav-link{padding:6px 14px;font-size:.7rem;font-weight:600;color:var(--t3);text-decoration:none;border-radius:6px;transition:all .15s}
+.nav-link:hover{color:var(--t2);background:var(--surface)}
+.nav-link.active{color:var(--accent);background:rgba(255,140,0,.08)}
+.nav-update{margin-left:auto;font-size:.65rem;color:var(--t3);white-space:nowrap}
+.nav-update span{color:var(--accent);font-weight:600}
+
+/* CONTAINER */
+.wrap{max-width:1440px;margin:0 auto;padding:20px 28px}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:20px}
+.kpi-card{background:var(--surface);border-radius:10px;padding:16px 18px;position:relative}
+.kpi-label{font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.kpi-value{font-size:1.5rem;font-weight:800;color:var(--t1);letter-spacing:-.5px;line-height:1.2}
+.kpi-delta{font-size:.62rem;font-weight:600;margin-top:4px}
+.kpi-icon{position:absolute;top:14px;right:16px;font-size:1.2rem;opacity:.3}
+
+/* SECTION */
+.section{margin-bottom:20px}
+.sec-title{font-size:.85rem;font-weight:700;color:var(--t1);margin-bottom:4px}
+.sec-sub{font-size:.65rem;color:var(--t3);margin-bottom:16px}
+
+/* GRID */
+.g-main{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.g-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* CARD */
+.card{background:var(--surface);border-radius:10px;padding:24px;display:flex;flex-direction:column}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:.85rem;font-weight:700;color:var(--t1)}
+.card-badge{font-size:.6rem;color:var(--t3);font-weight:500}
+
+/* CHART */
+.chart-area{display:flex;align-items:flex-end;gap:8px;height:220px;padding-bottom:4px;margin-bottom:4px;position:relative}
+.chart-labels{display:flex;gap:8px}
+.chart-toggle{display:flex;gap:4px;margin-bottom:14px}
+.chart-btn{padding:5px 12px;font-size:.62rem;font-weight:600;background:var(--elevated);color:var(--t3);border:none;border-radius:5px;cursor:pointer;font-family:var(--font);transition:all .15s}
+.chart-btn:hover{color:var(--t2)}
+.chart-btn.active{background:var(--accent);color:#000}
+.chart-gridline{position:absolute;left:0;right:0;border-top:1px solid var(--elevated);pointer-events:none}
+.chart-source{font-size:.6rem;color:var(--t3);margin-top:8px;line-height:1.6}
+</style>
+</head>
+<body>
+<style>
+/* NEWS FEED */
+.news-feed{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--elevated) transparent;flex:1;min-height:0}
+.news-feed::-webkit-scrollbar{width:3px}
+.news-feed::-webkit-scrollbar-thumb{background:var(--elevated);border-radius:2px}
+.news-card{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--elevated)}
+.news-card:first-child{padding-top:0}
+.news-card:last-child{border-bottom:none}
+.news-icon{width:36px;height:36px;border-radius:8px;background:var(--elevated);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;color:var(--t2);flex-shrink:0}
+.news-icon.amz{background:#FF9900;color:#000}
+.news-icon.shein{background:#000;color:#fff;border:1px solid var(--border)}
+.news-icon.temu{background:#F97316;color:#fff}
+.news-icon.tiktok{background:#000;color:#fff;border:1px solid var(--border)}
+.news-icon.walmart{background:#0071CE;color:#fff}
+.news-icon.jd{background:#E53238;color:#fff}
+.news-icon.google{background:#4285F4;color:#fff}
+.news-icon.default{background:var(--elevated);color:var(--t2)}
+.news-content{flex:1;min-width:0}
+.news-meta-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.news-tag-text{font-size:.6rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.3px}
+.news-date-text{font-size:.6rem;color:var(--t3)}
+.news-headline{font-size:.82rem;font-weight:600;color:var(--t1);line-height:1.4;margin-bottom:4px}
+.news-summary{font-size:.72rem;color:var(--t3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-src{font-size:.6rem;color:var(--blue);text-decoration:none;margin-top:4px;display:inline-block}
+.news-src:hover{text-decoration:underline}
+.see-all{font-size:.65rem;color:var(--t3);text-decoration:none;display:flex;align-items:center;gap:4px}
+.see-all:hover{color:var(--t2)}
+
+/* CALLOUT */
+.callout{border-left:3px solid;background:rgba(13,17,23,.5);padding:10px 14px;margin-bottom:8px;border-radius:0 6px 6px 0}
+.callout-amber{border-color:var(--accent)}
+.callout-green{border-color:var(--green)}
+.callout-lbl{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.callout-amber .callout-lbl{color:var(--accent)}
+.callout-green .callout-lbl{color:var(--green)}
+.callout-txt{font-size:.72rem;color:var(--t2);line-height:1.6}
+
+/* CONTENT ITEMS */
+.c-item{margin-bottom:18px}
+.c-item:last-child{margin-bottom:0}
+.c-meta{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.c-tag{font-size:.58rem;color:var(--accent);text-transform:uppercase;letter-spacing:.3px;font-weight:700}
+.c-date{font-size:.58rem;color:var(--t3)}
+.c-title{font-size:.88rem;font-weight:600;color:var(--t1);margin-bottom:5px;line-height:1.4}
+.c-body{font-size:.78rem;color:var(--t2);line-height:1.6;margin-bottom:8px}
+.src-link{font-size:.62rem;color:var(--blue);text-decoration:none;display:inline-block;margin-top:4px}
+.src-link:hover{text-decoration:underline}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{background:var(--elevated);color:var(--t2);font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;padding:10px 14px;text-align:left}
+.tbl td{padding:10px 14px;font-size:.76rem;color:var(--t2)}
+.tbl tr:nth-child(even) td{background:rgba(22,27,34,.5)}
+.tbl tr:hover td{background:var(--elevated)}
+.status{font-size:.68rem;font-weight:600}
+.s-high{color:var(--red)}.s-med{color:var(--accent)}.s-pos{color:var(--green)}
+.cat-tag{font-size:.58rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+
+/* EVENTS */
+.evt{padding:10px 0;display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--elevated)}
+.evt:last-child{border-bottom:none}
+.evt-date{font-size:.68rem;color:var(--accent);font-weight:700;min-width:110px}
+.evt-name{font-size:.78rem;color:var(--t1);font-weight:600}
+.evt-note{font-size:.65rem;color:var(--t3);margin-left:auto}
+
+/* TIMELINE */
+.tl{padding-left:28px;position:relative}
+.tl::before{content:'';position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--elevated);border-radius:1px}
+.tl-item{position:relative;padding:12px 0}
+.tl-item+.tl-item{border-top:1px solid var(--elevated)}
+.tl-item::before{content:'';position:absolute;left:-24px;top:18px;width:8px;height:8px;background:var(--accent);border-radius:50%}
+.tl-date{font-size:.62rem;color:var(--accent);font-weight:700;margin-bottom:2px}
+.tl-item h4{font-size:.82rem;font-weight:600;color:var(--t1);margin:2px 0}
+.tl-item p{font-size:.72rem;color:var(--t3)}
+
+/* DROPDOWN */
+.cat-select{background:var(--elevated);color:var(--t1);border:1px solid var(--border);padding:10px 14px;font-family:var(--font);font-size:.76rem;font-weight:600;width:100%;margin-bottom:14px;outline:none;cursor:pointer;border-radius:8px;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238B949E'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:32px}
+.cat-select:hover{border-color:var(--t3)}
+.cat-select option{background:var(--elevated);color:var(--t1)}
+.cat-news-feed{max-height:520px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--elevated) transparent}
+.cat-news-feed::-webkit-scrollbar{width:3px}
+.cat-news-feed::-webkit-scrollbar-thumb{background:var(--elevated);border-radius:2px}
+
+/* FOOTER */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:20px 28px;text-align:center;font-size:.62rem;color:var(--t3);line-height:2}
+footer a{color:var(--t2);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+/* RESPONSIVE */
+@media(max-width:1200px){.kpi-row{grid-template-columns:repeat(4,1fr)}.g-3{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.g-main,.g-2,.g-3{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <span class="nav-brand">■ AMZN US MKT</span>
+    <a href="#macro" class="nav-link active">總經</a>
+    <a href="#critical" class="nav-link">重大</a>
+    <a href="#fees" class="nav-link">費用</a>
+    <a href="#ai" class="nav-link">AI</a>
+    <a href="#cats" class="nav-link">品類</a>
+    <a href="#opps" class="nav-link">機會</a>
+    <a href="#events" class="nav-link">活動</a>
+    <a href="#tl" class="nav-link">時間軸</a>
+    <a href="#sum" class="nav-link">總覽</a>
+    <span class="nav-update">最後更新：<span>2026/04/23</span></span>
+  </div>
+</nav>
+
+<!-- KPI TICKER TAPE -->
+<div style="background:var(--surface);overflow:hidden" id="macro">
+  <div style="display:flex;width:max-content;animation:tickerScroll 50s linear infinite" class="ticker-track">
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">US E-COM 銷售額 2025</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">$1.23T</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 3.4% YoY</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">US E-COM 滲透率</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">16.4%</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 預估 2028 達 20%</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">行動商務佔比</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">60%+</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 全球持續成長</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">全球電商 2025</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">$6.42T</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 6.9% YoY</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">PRIME 會員</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">200M+</span><span style="font-size:.6rem;font-weight:600;color:var(--t3)">— 全球</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">DE MINIMIS</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">已取消</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▼ 2025/08/29 全球生效</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">混合庫存</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">已終止</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▼ 2026/03/31 全面停止</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">TEMU 市佔</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">~2%</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▼ 關稅衝擊低價模式</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">AMZN GMV 2025</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">$830B</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 12.4% YoY</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">AMZN 3P 銷售額</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">$300B</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 佔 US E-COM 37.6%</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">美台關稅</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">15%</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▼ 從 20% 降 · 2026/01</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">FBA 燃油附加費</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">+3.5%</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▲ 2026/04/17 新增</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">FBA 費用調漲</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">+$0.08</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▲ 每件 · 2026/01/15</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">入庫瑕疵費</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">$0.32-$5.72</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▲ 大幅調升</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">RUFUS AI 搜尋</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">13%+</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 轉換率高 60%</span></div>
+    <!-- DUPLICATE FOR SEAMLESS LOOP -->
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">US E-COM 銷售額 2025</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">$1.23T</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 3.4% YoY</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">US E-COM 滲透率</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">16.4%</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 預估 2028 達 20%</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">行動商務佔比</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">60%+</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 全球持續成長</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">全球電商 2025</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">$6.42T</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 6.9% YoY</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">PRIME 會員</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">200M+</span><span style="font-size:.6rem;font-weight:600;color:var(--t3)">— 全球</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">DE MINIMIS</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">已取消</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▼ 2025/08/29 全球生效</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">混合庫存</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">已終止</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▼ 2026/03/31 全面停止</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">TEMU 市佔</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">~2%</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▼ 關稅衝擊低價模式</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">AMZN GMV 2025</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">$830B</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 12.4% YoY</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">AMZN 3P 銷售額</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">$300B</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 佔 US E-COM 37.6%</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">美台關稅</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">15%</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▼ 從 20% 降 · 2026/01</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">FBA 燃油附加費</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">+3.5%</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▲ 2026/04/17 新增</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">FBA 費用調漲</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">+$0.08</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▲ 每件 · 2026/01/15</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">入庫瑕疵費</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">$0.32-$5.72</span><span style="font-size:.6rem;font-weight:600;color:var(--red)">▲ 大幅調升</span></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;white-space:nowrap"><span style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600">RUFUS AI 搜尋</span><span style="font-size:.95rem;font-weight:800;color:var(--accent)">13%+</span><span style="font-size:.6rem;font-weight:600;color:var(--green)">▲ 轉換率高 60%</span></div>
+  </div>
+</div>
+<style>
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+div:has(>.ticker-track):hover .ticker-track{animation-play-state:paused}
+</style>
+
+<div class="wrap">
+
+<!-- MACRO: CHART + NEWS -->
+<div class="g-main section">
+
+  <!-- LEFT: Charts -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <!-- GMV Chart -->
+    <div class="card">
+      <div class="card-hd">
+        <div>
+          <div class="card-title">美國電商市場規模 (GMV)</div>
+          <div style="font-size:.62rem;color:var(--t3);margin-top:2px">單位：兆美元 (Trillion USD)</div>
+        </div>
+      </div>
+      <div class="chart-toggle">
+        <button class="chart-btn active" onclick="showChart('sales')">銷售額</button>
+        <button class="chart-btn" onclick="showChart('yoy')">YoY 成長率</button>
+        <button class="chart-btn" onclick="showChart('pen')">滲透率</button>
+      </div>
+      <div class="chart-area" id="chartArea"></div>
+      <div class="chart-labels" id="chartLabels"></div>
+      <div class="chart-source" id="chartSource"></div>
+    </div>
+
+    <!-- Market Share Chart -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">美國電商市佔率（按公司）</div>
+        <div style="font-size:.6rem;color:var(--t3)">單位：% of GMV</div>
+      </div>
+      <div id="shareChart"></div>
+      <div style="font-size:.55rem;color:var(--t3);margin-top:10px">* Shopify 為平台 GMV 佔比（含所有 Shopify 商店），非單一賣場。Temu 於 2022 年 9 月上線美國市場。</div>
+      <div style="font-size:.55rem;color:var(--t3);margin-top:4px">資料來源：<a class="src-link" href="https://www.demandsage.com/amazon-statistics/" target="_blank" style="margin:0;font-size:.55rem">DemandSage</a> · <a class="src-link" href="https://www.statista.com/topics/2443/us-ecommerce/" target="_blank" style="margin:0;font-size:.55rem">Statista</a> · <a class="src-link" href="https://www.marketplacepulse.com/" target="_blank" style="margin:0;font-size:.55rem">Marketplace Pulse</a> · <a class="src-link" href="https://colorlib.com/wp/online-shopping-statistics/" target="_blank" style="margin:0;font-size:.55rem">Colorlib (eMarketer)</a></div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: News Feed -->
+  <div class="card" id="macroRight" style="overflow:hidden">
+    <div class="card-hd">
+      <div class="card-title">電商產業新聞動態</div>
+      <a href="#" class="see-all" onclick="return false">查看全部 →</a>
+    </div>
+    <div class="news-feed" id="newsBody"></div>
+  </div>
+
+</div>
+
+<!-- CRITICAL UPDATES -->
+<div id="critical" class="section">
+  <div class="sec-title">重大更新</div>
+  <div class="g-2">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">關稅 & 貿易</div>
+      <div class="c-item"><div class="c-meta"><span class="c-tag">重大</span><span class="c-date">2026/01/15 生效</span></div><div class="c-title">美台關稅協議：統一 15% 稅率</div><div class="c-body">美國與台灣完成對等關稅協議，稅率從 20% 降至 15%，與日本、韓國同級。台灣承諾 $2,500 億直接投資及 $2,500 億半導體產業信用擔保。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">關稅降低 5% 直接改善利潤。台灣賣家相較中國賣家（20-30%+ 關稅）擁有明顯成本優勢。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">以 15% 稅率重新計算到岸成本。考慮將中國生產轉移至台灣。強調「MIT 台灣製造」。</div></div><a class="src-link" href="https://www.theboardiq.com/tariffs/taiwan" target="_blank">→ theboardiq.com</a></div>
+      <div class="c-item"><div class="c-meta"><span class="c-tag">重大</span><span class="c-date">2025/08/29 生效</span></div><div class="c-title">美國取消全球小額免稅（De Minimis）</div><div class="c-body">$800 以下進口免稅門檻全面取消。所有進口貨物均需通關繳稅，比原定 2027 年時程大幅提前。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">小額樣品與低價測試訂單需繳稅。多數 FBA 賣家每批出貨已超 $800，主要影響 DTC/小包裹。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">合併出貨降低通關成本。確保報關行正確申報。將關稅納入所有出貨預算。</div></div><a class="src-link" href="https://www.unicargo.com/de-minimis-ended-2026-tariffs-guide-amazon-fba/" target="_blank">→ unicargo.com</a></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">FBA 營運</div>
+      <div class="c-item"><div class="c-meta"><span class="c-tag">重大</span><span class="c-date">2026/04/17 生效</span></div><div class="c-title">FBA 3.5% 燃油與物流附加費</div><div class="c-body">Amazon 對美國及加拿大所有 FBA 配送費用加收 3.5% 燃油附加費，疊加於 2026/01 費用調漲之上。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">與 FBA 費用調漲及關稅疊加。低客單價跨境賣家利潤壓縮最大。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">審視利潤壓縮。低利潤 SKU 考慮調價。大型/重型商品評估 FBM 或 3PL。</div></div><a class="src-link" href="https://www.efulfillmentservice.com/2026/04/amazon-2026-fba-fee-changes-what-sellers-need-to-know/" target="_blank">→ efulfillmentservice.com</a></div>
+      <div class="c-item"><div class="c-meta"><span class="c-tag">重大</span><span class="c-date">2026/03/31 生效</span></div><div class="c-title">混合庫存（Commingled）全面終止</div><div class="c-body">所有 FBA 商品必須貼上專屬 FNSKU 標籤。不再允許無標籤/混合入庫。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">品牌賣家受益：不再有仿冒品混入正品庫存。但標籤要求增加跨境出貨準備時間與成本。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">確保出貨前貼好 FNSKU。與貨代合作將貼標納入備貨流程。加入 Brand Registry。</div></div><a class="src-link" href="https://amzscout.net/blog/amazon-news/" target="_blank">→ amzscout.net</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEES -->
+<div id="fees" class="section">
+  <div class="sec-title">費用</div>
+  <div class="g-3">
+    <div class="card"><div class="card-title" style="margin-bottom:4px">FBA 費用調漲</div><div style="font-size:.6rem;color:var(--t3);margin-bottom:12px">2026/01/15</div><div class="c-body" style="margin-bottom:10px">標準品（$10-$50）每件 +$0.08。$50+ 商品 +$0.31。入庫瑕疵費從 $0.02-$0.07 升至 $0.32-$5.72。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">入庫瑕疵費是真正風險——包裝不當、箱子尺寸錯誤或缺標籤將觸發高額罰款。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">投資高品質備貨包裝。使用 Amazon 合作承運商。瑕疵罰款已遠超正確備貨成本。</div></div><a class="src-link" href="https://www.payability.com/blog/amazon-fba-fees-2026-calculator-guide/" target="_blank">→ payability.com</a></div>
+    <div class="card"><div class="card-title" style="margin-bottom:4px">FBA 索賠窗口縮短</div><div style="font-size:.6rem;color:var(--t3);margin-bottom:12px">2025/10</div><div class="c-body" style="margin-bottom:10px">Amazon 大幅縮短 FBA 遺失/損壞庫存索賠時間。賣家必須更快提出索賠才能獲得補償。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">時差問題使台灣賣家更難及時發現並提交索賠。累積未申請補償金額可能相當可觀。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">使用自動化補償工具（Getida、SELLERBOARD）即時監控庫存差異。設定異動警報。</div></div><a class="src-link" href="https://closo.co/blogs/optimization-growth-strategies/amazon-seller-news-2026-navigating-the-most-significant-marketplace-shifts-in-a-decade" target="_blank">→ closo.co</a></div>
+    <div class="card"><div class="card-title" style="margin-bottom:4px">績效考核趨嚴</div><div style="font-size:.6rem;color:var(--t3);margin-bottom:12px">2025-2026</div><div class="c-body" style="margin-bottom:10px">積極執行 ODR ≤1%、遲發率及回覆時間考核。新「僅星級評分」功能讓買家更容易留負評。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">跨境物流延遲影響遲發指標。僅星級評分降低留負評門檻，可能增加負面評價量。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">使用 FBA 避免物流指標問題。主動管理品質與 Listing 準確性。每日監控帳戶健康。</div></div><a class="src-link" href="https://www.egrowthpartners.com/amazon-code-of-conduct-what-need-know/" target="_blank">→ egrowthpartners.com</a></div>
+  </div>
+</div>
+
+<!-- AI -->
+<div id="ai" class="section">
+  <div class="sec-title">AI</div>
+  <div class="g-3">
+    <div class="card"><div class="card-title" style="margin-bottom:4px">RUFUS AI 搜尋</div><div style="font-size:.6rem;color:var(--t3);margin-bottom:12px">13%+ 佔比</div><div class="c-body" style="margin-bottom:10px">Rufus 處理每日 20 億+ 搜尋中的 13%+。使用者轉換率高出 60%。使用語意理解而非關鍵字匹配推薦商品。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">關鍵字堆砌策略效果下降。未針對語意搜尋優化的賣家正在失去曝光。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">用自然語言重寫 Listing。聚焦使用場景與具體優勢。投資 A+ Content 和 Q&A。</div></div><a class="src-link" href="https://theroberthu.com/blog/amazon-rufus-optimization" target="_blank">→ theroberthu.com</a></div>
+    <div class="card"><div class="card-title" style="margin-bottom:4px">COSMO 演算法</div><div style="font-size:.6rem;color:var(--t3);margin-bottom:12px">知識圖譜</div><div class="c-body" style="margin-bottom:10px">COSMO 將 Listing 解讀為結構化知識圖譜。需同時優化 A10 關鍵字、COSMO 語意、Rufus 對話層三個系統。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">英文品質差、描述模糊或缺少屬性的 Listing 將被降權。COSMO 獎勵結構化事實內容。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">聘請英語母語文案。填寫每個產品屬性欄位。以使用場景和買家意圖組織 Bullet Points。</div></div><a class="src-link" href="https://zonguru.com/blog/amazon-seo-guide" target="_blank">→ zonguru.com</a></div>
+    <div class="card"><div class="card-title" style="margin-bottom:4px">ACCELERATE 2026</div><div style="font-size:.6rem;color:var(--t3);margin-bottom:12px">AI 隊友</div><div class="c-body" style="margin-bottom:10px">新 AI 工具涵蓋 Listing 建立、帳戶健康監控、產品研究、創意素材生成及通關協助。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">AI 通關工具簡化跨境合規。AI Listing 工具助非英語母語者跨越語言障礙。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">盡早採用 Amazon 原生 AI 工具——免費且針對平台優化。AI 產出為起點，人工精修。</div></div><a class="src-link" href="https://www.estorefactory.com/blog/future-of-selling-amazon-accelerate-2026/" target="_blank">→ estorefactory.com</a></div>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<div id="cats" class="section">
+  <div class="sec-title">品類</div>
+  <div class="g-2">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:20px 24px 12px"><div class="card-title">Amazon 品類成長排名</div><div style="font-size:.6rem;color:var(--t3);margin-top:2px">2026 實際 · 2027–2028 預估</div></div>
+      <table class="tbl"><thead><tr><th>#</th><th>品類</th><th>2026</th><th>2027E</th><th>2028E</th><th>驅動因素</th></tr></thead><tbody>
+        <tr><td>1</td><td>Beauty & Personal Care</td><td><span class="status s-pos">▲ +18%</span></td><td><span class="status s-pos">▲ +16%</span></td><td><span class="status s-pos">▲ +14%</span></td><td>Clean beauty、K-beauty、抗老保養</td></tr>
+        <tr><td>2</td><td>Health & Household</td><td><span class="status s-pos">▲ +16%</span></td><td><span class="status s-pos">▲ +15%</span></td><td><span class="status s-pos">▲ +13%</span></td><td>益生菌、維他命、居家保健</td></tr>
+        <tr><td>3</td><td>Pet Supplies</td><td><span class="status s-pos">▲ +15%</span></td><td><span class="status s-pos">▲ +14%</span></td><td><span class="status s-pos">▲ +12%</span></td><td>寵物人性化、天然食品、智慧用品</td></tr>
+        <tr><td>4</td><td>Home & Kitchen</td><td><span class="status s-pos">▲ +12%</span></td><td><span class="status s-pos">▲ +11%</span></td><td><span class="status s-pos">▲ +10%</span></td><td>智慧家居、收納、天然材質廚具</td></tr>
+        <tr><td>5</td><td>Sports & Outdoors</td><td><span class="status s-pos">▲ +11%</span></td><td><span class="status s-pos">▲ +10%</span></td><td><span class="status s-pos">▲ +9%</span></td><td>居家健身、戶外裝備、瑜珈</td></tr>
+        <tr><td>6</td><td>Baby Products</td><td><span class="status s-pos">▲ +10%</span></td><td><span class="status s-pos">▲ +9%</span></td><td><span class="status s-pos">▲ +8%</span></td><td>有機材質、安全認證、智慧監控</td></tr>
+        <tr><td>7</td><td>Grocery & Gourmet</td><td><span class="status s-pos">▲ +10%</span></td><td><span class="status s-pos">▲ +10%</span></td><td><span class="status s-pos">▲ +9%</span></td><td>訂閱制、有機食品、異國風味</td></tr>
+        <tr><td>8</td><td>Electronics</td><td><span class="status s-med">▲ +8%</span></td><td><span class="status s-med">▲ +7%</span></td><td><span class="status s-med">▲ +7%</span></td><td>GaN 充電器、智慧穿戴、配件</td></tr>
+        <tr><td>9</td><td>Tools & Home Improvement</td><td><span class="status s-med">▲ +7%</span></td><td><span class="status s-med">▲ +7%</span></td><td><span class="status s-med">▲ +6%</span></td><td>DIY 工具、智慧照明、節能</td></tr>
+        <tr><td>10</td><td>Toys & Games</td><td><span class="status s-med">▲ +6%</span></td><td><span class="status s-med">▲ +6%</span></td><td><span class="status s-med">▲ +5%</span></td><td>STEM 教育、益智玩具</td></tr>
+      </tbody></table>
+      <div style="padding:10px 24px;font-size:.58rem;color:var(--t3)">資料來源：Darkroom Agency、Jungle Scout、Helium 10、SupplyKick 等第三方報告綜合整理。</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:4px">品類趨勢洞察</div>
+      <div style="font-size:.6rem;color:var(--t3);margin-bottom:14px">選擇品類查看熱門趨勢與機會</div>
+      <select class="cat-select" id="catSelect" onchange="showCatNews(this.value)">
+        <option value="" disabled selected>— 選擇品類 —</option>
+        <optgroup label="── HARDLINES ──"><option value="home">Home</option><option value="home_improvement">Home Improvement</option><option value="kitchen">Kitchen</option><option value="lawn_garden">Lawn & Garden</option><option value="appliances">Major Appliances</option><option value="tools">Tools</option><option value="automotive">Automotive</option><option value="furniture">Furniture</option></optgroup>
+        <optgroup label="── CONSUMABLES & SOFTLINES ──"><option value="baby">Baby</option><option value="beauty">Beauty & Personal Care</option><option value="grocery">Grocery & Gourmet</option><option value="health">Health & Household</option><option value="pet">Pet Supplies</option><option value="sports">Sports & Outdoors</option><option value="apparel">Apparel & Fashion</option><option value="jewelry">Jewelry</option><option value="shoes">Shoes & Luggage</option><option value="toys">Toys & Games</option></optgroup>
+        <optgroup label="── CE ──"><option value="electronics">Electronics</option><option value="camera">Camera & Photo</option><option value="home_ent">Home Entertainment</option><option value="musical">Musical Instruments</option><option value="office">Office Products</option><option value="pc">PC & Computers</option><option value="wireless">Wireless & Accessories</option></optgroup>
+      </select>
+      <div class="cat-news-feed" id="catNewsFeed"><div style="color:var(--t3);font-size:.78rem;padding:32px 0;text-align:center">← 請從上方選擇品類</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- OPPORTUNITIES -->
+<div id="opps" class="section">
+  <div class="sec-title">機會</div>
+  <div class="g-3">
+    <div class="card"><div class="card-title" style="margin-bottom:4px">關稅優勢 VS 中國</div><div style="font-size:.6rem;color:var(--t3);margin-bottom:12px">結構性利多</div><div class="c-body" style="margin-bottom:10px">中國 20-30%+ 關稅 vs 台灣 15%。小額免稅取消對中國直郵賣家衝擊更大。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">結構性競爭優勢。可在價格上擊敗中國供應商，同時維持品質定位。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">積極行銷台灣產地。瞄準中國賣家主導品類。接觸尋求供應鏈多元化的美國品牌。</div></div></div>
+    <div class="card"><div class="card-title" style="margin-bottom:4px">DPD × AMAZON × 全家</div><div style="font-size:.6rem;color:var(--t3);margin-bottom:12px">2025/10</div><div class="c-body" style="margin-bottom:10px">DPD 台灣與 Amazon 全球開店及全家便利商店合作推出跨境物流服務，以 AWS 雲端驅動。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">新增物流選項，全台全家寄件。可能降低運費並簡化出貨流程。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">評估 DPD 服務是否適合出貨量。與現有貨代比較費率。</div></div><a class="src-link" href="https://www.dpd.com/tw/en/2025/10/29/cross-border-shipping-event/" target="_blank">→ dpd.com</a></div>
+    <div class="card"><div class="card-title" style="margin-bottom:4px">品牌保護升級</div><div style="font-size:.6rem;color:var(--t3);margin-bottom:12px">防偽利多</div><div class="c-body" style="margin-bottom:10px">混合庫存終止 + 更嚴格 IP 執法。台灣正品品牌獲得前所未有的平台保護。</div><div class="callout callout-amber"><div class="callout-lbl">🇹🇼 影響</div><div class="callout-txt">台灣品牌可在正品保證上競爭。不再有仿冒品透過您的 Listing 出貨。</div></div><div class="callout callout-green"><div class="callout-lbl">💡 行動</div><div class="callout-txt">加入 Brand Registry、Transparency、Project Zero。善用 A+ Content 和品牌故事。</div></div></div>
+  </div>
+</div>
+
+<!-- EVENTS -->
+<div id="events" class="section">
+  <div class="sec-title">活動</div>
+  <div class="g-2">
+    <div class="card"><div class="card-title" style="margin-bottom:14px">2026 Amazon 活動行事曆</div>
+      <div class="evt"><span class="evt-date">2026/05/11-15</span><span class="evt-name">🐾 Amazon Pet Day</span><span class="evt-note">首次擴展至 5 天</span></div>
+      <div class="evt"><span class="evt-date">2026/06 下旬（預估）</span><span class="evt-name">⚡ Prime Day</span><span class="evt-note">可能從 7 月提前</span></div>
+      <div class="evt"><span class="evt-date">2026/07 中旬（備案）</span><span class="evt-name">⚡ Prime Day（傳統）</span><span class="evt-note">預估 7/14-15</span></div>
+      <div class="evt"><span class="evt-date">2026/09（預估）</span><span class="evt-name">🎒 Back to School</span><span class="evt-note">開學季</span></div>
+      <div class="evt"><span class="evt-date">2026/10/07-08（預估）</span><span class="evt-name">🍂 Fall Prime</span><span class="evt-note">秋季 Prime</span></div>
+      <div class="evt"><span class="evt-date">2026/11/27</span><span class="evt-name">🛒 Black Friday</span><span class="evt-note">Q4 最大促銷</span></div>
+      <div class="evt"><span class="evt-date">2026/11/30</span><span class="evt-name">💻 Cyber Monday</span><span class="evt-note">線上高峰</span></div>
+      <div class="evt"><span class="evt-date">2026/12 月</span><span class="evt-name">🎄 Holiday Season</span><span class="evt-note">聖誕+年末</span></div>
+    </div>
+    <div class="card"><div class="card-title" style="margin-bottom:14px">賣家備貨提醒</div>
+      <div class="c-body" style="margin-bottom:12px">Amazon 通常要求在活動前 4-6 週完成 FBA 入庫。跨境賣家需額外預留 2-3 週海運時間。</div>
+      <div style="overflow:hidden;border-radius:8px"><table class="tbl"><thead><tr><th>活動</th><th>建議入庫截止</th><th>備註</th></tr></thead><tbody>
+        <tr><td>Pet Day（5/11）</td><td>4 月初</td><td>寵物品類必備</td></tr>
+        <tr><td>Prime Day（6-7 月）</td><td>5 月中</td><td>全品類最大流量</td></tr>
+        <tr><td>Fall Prime（10 月）</td><td>8 月底</td><td>Q4 暖身</td></tr>
+        <tr><td>BFCM（11/27-30）</td><td>10 月初</td><td>Q4 決戰</td></tr>
+        <tr><td>Holiday（12 月）</td><td>10 月底</td><td>聖誕禮品高峰</td></tr>
+      </tbody></table></div>
+      <div style="margin-top:10px;font-size:.65rem;color:var(--t3)">* 日期為預估，以 Amazon 官方公告為準。</div>
+    </div>
+  </div>
+</div>
+
+<!-- TIMELINE + SUMMARY -->
+<div id="tl" class="section">
+  <div class="sec-title">時間軸</div>
+  <div class="g-2">
+    <div class="card"><div class="card-title" style="margin-bottom:16px">重要日期</div>
+      <div class="tl">
+        <div class="tl-item"><div class="tl-date">2025/08/29</div><h4>全球 De Minimis 取消</h4><p>所有進口至美國貨物均需通關繳稅</p></div>
+        <div class="tl-item"><div class="tl-date">2025/10</div><h4>FBA 索賠窗口縮短 + 新評分機制</h4><p>補償申請時間縮短；推出僅星級評分</p></div>
+        <div class="tl-item"><div class="tl-date">2026/01/01</div><h4>FBA 代貼標服務終止</h4><p>賣家須自行貼好 FNSKU 標籤</p></div>
+        <div class="tl-item"><div class="tl-date">2026/01/15</div><h4>美台關稅 15% 生效 + FBA 費用調漲</h4><p>新稅率生效。FBA +$0.08/件</p></div>
+        <div class="tl-item"><div class="tl-date">2026/03/31</div><h4>混合庫存全面終止</h4><p>所有 FBA 商品須貼 FNSKU</p></div>
+        <div class="tl-item"><div class="tl-date">2026/04/17</div><h4>3.5% FBA 燃油附加費</h4><p>加收於所有 FBA 費用之上</p></div>
+      </div>
+    </div>
+    <div id="sum" class="card" style="padding:0;overflow:hidden">
+      <div style="padding:20px 24px 12px"><div class="card-title">台灣賣家影響總覽</div></div>
+      <table class="tbl"><thead><tr><th>變動項目</th><th>影響</th><th>類別</th><th>優先行動</th></tr></thead><tbody>
+        <tr><td>美台關稅降至 15%</td><td><span class="status s-pos">● POSITIVE</span></td><td><span class="cat-tag">關稅</span></td><td>重新計算利潤</td></tr>
+        <tr><td>FBA 燃油附加費 3.5%</td><td><span class="status s-high">● HIGH</span></td><td><span class="cat-tag">費用</span></td><td>立即調整定價</td></tr>
+        <tr><td>FBA 費用調漲 ~$0.08/件</td><td><span class="status s-med">● MED</span></td><td><span class="cat-tag">費用</span></td><td>檢視低利潤 SKU</td></tr>
+        <tr><td>入庫瑕疵費 $0.32-$5.72</td><td><span class="status s-high">● HIGH</span></td><td><span class="cat-tag">費用</span></td><td>立即改善備貨品質</td></tr>
+        <tr><td>混合庫存終止</td><td><span class="status s-med">● MED</span></td><td><span class="cat-tag">營運</span></td><td>確保 FNSKU 貼標</td></tr>
+        <tr><td>小額免稅取消</td><td><span class="status s-med">● MED</span></td><td><span class="cat-tag">關稅</span></td><td>合併出貨</td></tr>
+        <tr><td>Rufus AI / COSMO</td><td><span class="status s-high">● HIGH</span></td><td><span class="cat-tag">LISTING</span></td><td>重寫 Listing</td></tr>
+        <tr><td>FBA 索賠時間縮短</td><td><span class="status s-med">● MED</span></td><td><span class="cat-tag">營運</span></td><td>自動化追蹤</td></tr>
+        <tr><td>DPD 台灣物流</td><td><span class="status s-pos">● POSITIVE</span></td><td><span class="cat-tag">物流</span></td><td>評估新選項</td></tr>
+        <tr><td>台灣關稅優勢</td><td><span class="status s-pos">● POSITIVE</span></td><td><span class="cat-tag">策略</span></td><td>瞄準中國品類</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .wrap -->
+
+<footer>
+  資料來源：<a href="https://www.marketplacepulse.com/" target="_blank">MARKETPLACE PULSE</a> · <a href="https://amzscout.net/blog/amazon-news/" target="_blank">AMZSCOUT</a> · <a href="https://www.payability.com/blog/amazon-fba-fees-2026-calculator-guide/" target="_blank">PAYABILITY</a> · <a href="https://www.theboardiq.com/tariffs/taiwan" target="_blank">BOARDIQ</a> · <a href="https://www.dpd.com/tw/en/2025/10/29/cross-border-shipping-event/" target="_blank">DPD TAIWAN</a> · <a href="https://www.darkroomagency.com/observatory/which-amazon-product-categories-are-growing-in-2025" target="_blank">DARKROOM</a>
+  <br>內容已重新整理撰寫以符合授權規範 · 專為台灣 AMAZON 賣家打造 · 2026/04
+</footer>
+
+<!-- JS -->
+<script>
+// Nav scroll highlight
+const lnks=document.querySelectorAll('.nav-link'),secs=[];
+lnks.forEach(l=>{const id=l.getAttribute('href')?.replace('#','');if(id){const el=document.getElementById(id);if(el)secs.push({id,el,link:l})}});
+function up(){let c=secs[0]?.id;for(const s of secs)if(s.el.getBoundingClientRect().top<=60)c=s.id;lnks.forEach(l=>l.classList.remove('active'));document.querySelector(`.nav-link[href="#${c}"]`)?.classList.add('active')}
+window.addEventListener('scroll',up,{passive:true});up();
+
+// Chart
+const chartData={
+  sales:{note:'單位：兆美元 · 資料來源：U.S. Census Bureau via Backlinko · E = 基於歷史 CAGR ~8% 預估',data:[
+    {y:'2019',v:0.60,d:'$0.60T',f:0},{y:'2020',v:0.79,d:'$0.79T',f:0},{y:'2021',v:0.87,d:'$0.87T',f:0},
+    {y:'2022',v:1.03,d:'$1.03T',f:0},{y:'2023',v:1.10,d:'$1.10T',f:0},{y:'2024',v:1.19,d:'$1.19T',f:0},
+    {y:'2025',v:1.23,d:'$1.23T',f:0},{y:'2026E',v:1.33,d:'$1.33T',f:1},{y:'2027E',v:1.44,d:'$1.44T',f:1}
+  ],max:1.58},
+  yoy:{note:'年增率 · 資料來源：U.S. Census Bureau · E = 預估',data:[
+    {y:'2019',v:14.6,d:'14.6%',f:0},{y:'2020',v:31.4,d:'31.4%',f:0},{y:'2021',v:10.5,d:'10.5%',f:0},
+    {y:'2022',v:18.4,d:'18.4%',f:0},{y:'2023',v:6.8,d:'6.8%',f:0},{y:'2024',v:8.2,d:'8.2%',f:0},
+    {y:'2025',v:3.4,d:'3.4%',f:0},{y:'2026E',v:8.1,d:'~8.1%',f:1},{y:'2027E',v:8.0,d:'~8.0%',f:1}
+  ],max:35},
+  pen:{note:'電商佔總零售比例 · 資料來源：U.S. Census Bureau、ClickPost · E = 預估',data:[
+    {y:'2019',v:11.0,d:'11.0%',f:0},{y:'2020',v:14.0,d:'14.0%',f:0},{y:'2021',v:13.2,d:'13.2%',f:0},
+    {y:'2022',v:14.6,d:'14.6%',f:0},{y:'2023',v:15.4,d:'15.4%',f:0},{y:'2024',v:16.1,d:'16.1%',f:0},
+    {y:'2025',v:16.4,d:'16.4%',f:0},{y:'2026E',v:17.2,d:'~17.2%',f:1},{y:'2027E',v:18.0,d:'~18.0%',f:1}
+  ],max:20}
+};
+function showChart(type){
+  document.querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
+  if(typeof event!=='undefined'&&event&&event.target)event.target.classList.add('active');
+  else{
+    // Initial load — activate the button matching this type
+    var map={sales:0,yoy:1,pen:2};
+    var btns=document.querySelectorAll('.chart-btn');
+    if(btns[map[type]])btns[map[type]].classList.add('active');
+  }
+  const d=chartData[type],area=document.getElementById('chartArea'),labels=document.getElementById('chartLabels');
+  let bh='',lh='';
+  d.data.forEach((r,i)=>{
+    const pct=Math.round((r.v/d.max)*100);
+    const barColor=r.f?'var(--accent)':'rgba(255,140,0,0.8)';
+    const border=r.f?'border:1px dashed rgba(255,140,0,.5);border-bottom:none':'';
+    bh+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">';
+    bh+='<div style="font-size:.62rem;color:var(--t1);font-weight:700;margin-bottom:4px;white-space:nowrap">'+r.d+'</div>';
+    bh+='<div style="width:100%;height:'+pct+'%;min-height:2px;background:'+barColor+';border-radius:4px 4px 0 0;'+border+'"></div>';
+    bh+='</div>';
+    lh+='<div style="flex:1;text-align:center;font-size:.58rem;color:'+(r.f?'var(--accent)':'var(--t3)')+';font-weight:600;padding-top:6px">'+r.y+'</div>';
+  });
+  area.innerHTML=bh;labels.innerHTML=lh;
+  document.getElementById('chartSource').textContent=d.note;
+}
+showChart('sales');
+
+// Market Share — Stacked bars
+const shareYears=['2019','2020','2021','2022','2023','2024','2025'];
+const shareCos=[
+  {n:'Amazon',c:'#FF8C00',d:[37.3,38.7,41.4,39.5,40.4,40.0,37.6]},
+  {n:'Shopify*',c:'#96BF48',d:[5.9,8.6,10.3,10.3,10.0,11.0,14.0]},
+  {n:'Walmart',c:'#0071CE',d:[4.6,5.3,6.6,6.3,6.4,6.4,6.4]},
+  {n:'eBay',c:'#E53238',d:[4.7,4.7,4.2,3.5,3.0,3.0,3.0]},
+  {n:'其他',c:'#484F58',d:[47.5,42.7,37.5,40.4,39.9,38.6,37.0]}
+];
+(function(){
+  const el=document.getElementById('shareChart');
+  let h='<div style="display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap">';
+  shareCos.forEach(co=>{h+='<span style="font-size:.62rem;color:var(--t2);display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;background:'+co.c+';border-radius:2px"></span>'+co.n+'</span>'});
+  h+='</div>';
+  h+='<div style="display:flex;align-items:flex-end;gap:10px;height:200px">';
+  shareYears.forEach((y,yi)=>{
+    h+='<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end">';
+    // Stacked bar
+    const total=shareCos.reduce((s,co)=>s+co.d[yi],0);
+    // Stack from top: Amazon first, Others last
+    shareCos.forEach(co=>{
+      const pct=(co.d[yi]/100)*100;
+      if(pct>0){
+        h+='<div style="width:100%;height:'+pct+'%;background:'+co.c+';position:relative;display:flex;align-items:center;justify-content:center">';
+        if(co.d[yi]>=3)h+='<span style="font-size:.5rem;color:#fff;font-weight:700">'+co.d[yi]+'%</span>';
+        h+='</div>';
+      }
+    });
+    h+='</div>';
+  });
+  h+='</div>';
+  h+='<div style="display:flex;gap:10px;margin-top:6px">';
+  shareYears.forEach(y=>{h+='<div style="flex:1;text-align:center;font-size:.58rem;color:var(--t3);font-weight:600">'+y+'</div>'});
+  h+='</div>';
+  el.innerHTML=h;
+})();
+
+// Sync news panel height
+(function(){
+  var left=document.querySelector('.g-main > div:first-child');
+  var right=document.getElementById('macroRight');
+  if(!left||!right)return;
+  function sync(){
+    var lh=left.offsetHeight;
+    right.style.height=lh+'px';
+    var nb=document.getElementById('newsBody');
+    if(nb){var hdr=right.querySelector('.card-hd');nb.style.maxHeight=(lh-(hdr?hdr.offsetHeight:40)-48)+'px'}
+  }
+  setTimeout(sync,200);window.addEventListener('resize',sync);
+})();
+</script>
+<script src="catdata.js"></script>
+<script src="newsdata.js"></script>
+<script>
+// Category news
+function showCatNews(cat){
+  const items=C3[cat];if(!items)return;
+  const feed=document.getElementById('catNewsFeed');
+  let h='';
+  items.forEach(i=>{
+    h+='<div class="c-item">';
+    h+='<div class="c-meta"><span class="c-tag">'+i.t+'</span></div>';
+    h+='<div class="c-title">'+i.h+'</div>';
+    h+='<div class="c-body">'+i.p+'</div>';
+    if(i.products&&i.products.length){
+      h+='<div style="background:var(--elevated);border-radius:6px;padding:10px 14px;margin:8px 0">';
+      h+='<div style="font-size:.58rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:6px">Amazon 強勢商品參考</div>';
+      i.products.forEach((p,idx)=>{h+='<div style="font-size:.72rem;color:var(--t2);padding:2px 0">'+String(idx+1)+'. <a href="https://www.amazon.com/s?k='+encodeURIComponent(p)+'" target="_blank" style="color:var(--blue);text-decoration:none">'+p+'</a></div>'});
+      h+='</div>';
+    }
+    if(i.src)h+='<a class="src-link" href="'+i.src+'" target="_blank">→ 資料來源</a>';
+    h+='</div>';
+  });
+  feed.innerHTML=h;
+}
+
+// News feed with icons
+(function(){
+  var nb=document.getElementById('newsBody');
+  if(!nb||typeof NEWS==='undefined')return;
+  function getIcon(tag){
+    const t=tag.toUpperCase();
+    if(t.includes('AMAZON'))return{cls:'amz',txt:'a'};
+    if(t.includes('SHEIN'))return{cls:'shein',txt:'S'};
+    if(t.includes('TEMU'))return{cls:'temu',txt:'T'};
+    if(t.includes('TIKTOK'))return{cls:'tiktok',txt:'T'};
+    if(t.includes('WALMART'))return{cls:'walmart',txt:'W'};
+    if(t.includes('JD'))return{cls:'jd',txt:'J'};
+    if(t.includes('GOOGLE'))return{cls:'google',txt:'G'};
+    return{cls:'default',txt:tag.charAt(0)};
+  }
+  var h='';
+  NEWS.forEach(function(n){
+    var ic=getIcon(n.tag);
+    h+='<div class="news-card">';
+    h+='<div class="news-icon '+ic.cls+'">'+ic.txt+'</div>';
+    h+='<div class="news-content">';
+    h+='<div class="news-meta-row"><span class="news-tag-text">'+n.tag+'</span><span class="news-date-text">'+n.date+'</span></div>';
+    h+='<div class="news-headline">'+n.title+'</div>';
+    h+='<div class="news-summary">'+n.body+'</div>';
+    h+='<a class="news-src" href="'+n.src+'" target="_blank">→ '+n.via+'</a>';
+    h+='</div></div>';
+  });
+  nb.innerHTML=h;
+})();
+</script>
+</body>
+</html>
