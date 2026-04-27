@@ -173,7 +173,7 @@ footer a:hover{text-decoration:underline}
     <a href="#events" class="nav-link">活動</a>
     <a href="#tl" class="nav-link">時間軸</a>
     <a href="#sum" class="nav-link">總覽</a>
-    <span class="nav-update">最後更新：<span>2026/04/23</span></span>
+    <span class="nav-update">最後更新：<span id="lastUpdate">—</span></span>
   </div>
 </nav>
 
@@ -543,6 +543,26 @@ function showCatNews(cat){
   });
   feed.innerHTML=h;
 }
+
+// Auto-update "last updated" from latest news date
+(function(){
+  if(typeof NEWS==='undefined'||!NEWS.length)return;
+  var el=document.getElementById('lastUpdate');
+  if(!el)return;
+  // Find newest date (NEWS entries use MM/DD/YYYY)
+  var newest=NEWS.reduce(function(acc,n){
+    var p=(n.date||'').split('/');
+    if(p.length!==3)return acc;
+    var d=new Date(+p[2],+p[0]-1,+p[1]);
+    return (!acc||d>acc)?d:acc;
+  },null);
+  if(newest){
+    var y=newest.getFullYear();
+    var m=String(newest.getMonth()+1).padStart(2,'0');
+    var d=String(newest.getDate()).padStart(2,'0');
+    el.textContent=y+'/'+m+'/'+d;
+  }
+})();
 
 // News feed with icons
 (function(){
