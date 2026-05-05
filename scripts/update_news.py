@@ -198,11 +198,76 @@ def dedupe(items: list[dict]) -> list[dict]:
 
 # -------- Translation ----------
 
-def translate_batch_openai(items: list[dict]) -> list[dict]:
-    """Translate titles & bodies to Traditional Chinese using OpenAI.
+def translate_batch_gemini(items: list[dict]) -> list[dict] | None:
+    """Translate titles & bodies to Traditional Chinese using Google Gemini.
 
-    Gracefully falls back to English if no API key / on error.
+    Returns translated items, or None if no Gemini key / on error (caller
+    should fall back to OpenAI or English).
     """
+    key = os.getenv("GEMINI_API_KEY")
+    if not key:
+        return None
+
+    try:
+        from google import genai
+        client = genai.Client(api_key=key)
+    except Exception as e:
+        print(f"  ! Gemini import failed: {e}")
+        return None
+
+    payload = [
+        {"i": i, "title": it["title_en"], "body": it["body_en"]}
+        for i, it in enumerate(items)
+    ]
+
+    prompt = (
+        "You are a business translator. Translate each item's title and body "
+        "into Traditional Chinese (zh-TW) suitable for Taiwan Amazon sellers. "
+        "Keep tickers / brand names / numbers in original form. Titles must be "
+        "concise (under 40 Chinese chars). Bodies must be one sentence under "
+        "80 Chinese chars, factual tone, no marketing fluff. "
+        "Return ONLY a JSON object with key 'items' whose value is an array. "
+        "Each entry must have keys i (int), title (str), body (str). "
+        "No preamble, no markdown, no code fences.\n\n"
+        "INPUT:\n" + json.dumps(payload, ensure_ascii=False)
+    )
+
+    try:
+        resp = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+            config={
+                "response_mime_type": "application/json",
+                "temperature": 0.3,
+            },
+        )
+        raw = resp.text or ""
+        data = json.loads(raw)
+        if isinstance(data, dict):
+            arr = data.get("items") or data.get("results") or next(
+                (v for v in data.values() if isinstance(v, list)), []
+            )
+        else:
+            arr = data
+        by_i = {int(x["i"]): x for x in arr if "i" in x}
+        for i, it in enumerate(items):
+            tr = by_i.get(i, {})
+            it["title"] = tr.get("title") or it["title_en"]
+            it["body"] = tr.get("body") or it["body_en"] or it["title_en"]
+        return items
+    except Exception as e:
+        print(f"  ! Gemini translation failed: {e}")
+        return None
+
+
+def translate_batch_openai(items: list[dict]) -> list[dict]:
+    """Translate titles & bodies. Tries Gemini first (free), then OpenAI, else English."""
+    # Prefer Gemini (has generous free tier)
+    out = translate_batch_gemini(items)
+    if out is not None:
+        print("  (translated via Gemini)")
+        return out
+
     key = os.getenv("OPENAI_API_KEY")
     if not key:
         print("  (no OPENAI_API_KEY set – using English titles)")
@@ -269,6 +334,91 @@ def translate_batch_openai(items: list[dict]) -> list[dict]:
     return items
 
 
+# -------- Daily summary ----------
+
+def generate_daily_summary(items: list[dict]) -> list[str]:
+    """Generate 5-7 bullet-point key takeaways from today's news items.
+
+    Returns a list of Traditional Chinese bullet strings.
+    Tries Gemini first (free), then OpenAI, else empty list.
+    """
+    if not items:
+        return []
+
+    payload = [
+        {"tag": it["tag"], "title": it.get("title") or it["title_en"],
+         "body": it.get("body") or it["body_en"]}
+        for it in items
+    ]
+
+    sys_prompt = (
+        "You are a senior analyst writing a daily briefing for Taiwan-based "
+        "Amazon sellers. Read the news items and produce 5-7 concise bullet "
+        "points in Traditional Chinese (zh-TW) capturing the most actionable "
+        "insights. Each bullet should be one short sentence under 50 Chinese "
+        "chars, focus on what sellers should know or do, not generic "
+        "restating. Group by theme if possible (e.g. 關稅/費用/AI/競爭). "
+        "Keep brand names, numbers, tickers in original form. "
+        "Return ONLY a JSON object: {\"points\": [\"...\", \"...\"]}. "
+        "No preamble, no markdown, no code fences."
+    )
+
+    # Try Gemini first
+    gkey = os.getenv("GEMINI_API_KEY")
+    if gkey:
+        try:
+            from google import genai
+            client = genai.Client(api_key=gkey)
+            prompt = sys_prompt + "\n\nINPUT:\n" + json.dumps(
+                payload, ensure_ascii=False
+            )
+            resp = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+                config={
+                    "response_mime_type": "application/json",
+                    "temperature": 0.4,
+                },
+            )
+            data = json.loads(resp.text or "{}")
+            pts = data.get("points") or data.get("bullets") or []
+            out = [str(p).strip() for p in pts if str(p).strip()][:7]
+            if out:
+                print("  (summary via Gemini)")
+                return out
+        except Exception as e:
+            print(f"  ! Gemini summary failed: {e}")
+
+    # Fall back to OpenAI
+    key = os.getenv("OPENAI_API_KEY")
+    if not key:
+        return []
+
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=key)
+    except Exception as e:
+        print(f"  ! OpenAI import failed for summary: {e}")
+        return []
+
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.4,
+        )
+        data = json.loads(resp.choices[0].message.content)
+        pts = data.get("points") or data.get("bullets") or []
+        return [str(p).strip() for p in pts if str(p).strip()][:7]
+    except Exception as e:
+        print(f"  ! summary generation failed: {e}")
+        return []
+
+
 # -------- Output ----------
 
 def js_escape(s: str) -> str:
@@ -281,7 +431,7 @@ def js_escape(s: str) -> str:
     ).strip()
 
 
-def write_newsdata(items: list[dict]) -> None:
+def write_newsdata(items: list[dict], summary: list[str]) -> None:
     lines = ["const NEWS=["]
     for it in items:
         obj = (
@@ -299,8 +449,20 @@ def write_newsdata(items: list[dict]) -> None:
     if len(lines) > 1 and lines[-1].endswith(","):
         lines[-1] = lines[-1][:-1]
     lines.append("];")
+
+    # Daily summary
+    today = datetime.now(timezone.utc).strftime("%Y/%m/%d")
+    lines.append("const DAILY_SUMMARY={")
+    lines.append(f"  date:'{today}',")
+    lines.append("  points:[")
+    for p in summary:
+        lines.append(f"    '{js_escape(p)}',")
+    lines.append("  ]")
+    lines.append("};")
+
     OUT_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"Wrote {len(items)} items to {OUT_FILE.relative_to(ROOT)}")
+    print(f"Wrote {len(items)} items + {len(summary)} summary points to "
+          f"{OUT_FILE.relative_to(ROOT)}")
 
 
 def main() -> int:
@@ -324,7 +486,9 @@ def main() -> int:
         return 1
 
     all_items = translate_batch_openai(all_items)
-    write_newsdata(all_items)
+    summary = generate_daily_summary(all_items)
+    print(f"Summary points: {len(summary)}")
+    write_newsdata(all_items, summary)
     return 0
 
 
