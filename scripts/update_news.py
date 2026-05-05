@@ -206,13 +206,14 @@ def translate_batch_gemini(items: list[dict]) -> list[dict] | None:
     """
     key = os.getenv("GEMINI_API_KEY")
     if not key:
+        print("  (GEMINI_API_KEY not set – skipping Gemini)")
         return None
 
     try:
         from google import genai
         client = genai.Client(api_key=key)
     except Exception as e:
-        print(f"  ! Gemini import failed: {e}")
+        print(f"  ! Gemini import/init failed: {e}")
         return None
 
     payload = [
@@ -241,7 +242,10 @@ def translate_batch_gemini(items: list[dict]) -> list[dict] | None:
                 "temperature": 0.3,
             },
         )
-        raw = resp.text or ""
+        raw = (resp.text or "").strip()
+        if not raw:
+            print("  ! Gemini returned empty response")
+            return None
         data = json.loads(raw)
         if isinstance(data, dict):
             arr = data.get("items") or data.get("results") or next(
@@ -250,13 +254,16 @@ def translate_batch_gemini(items: list[dict]) -> list[dict] | None:
         else:
             arr = data
         by_i = {int(x["i"]): x for x in arr if "i" in x}
+        if not by_i:
+            print(f"  ! Gemini response had no usable items: {raw[:200]}")
+            return None
         for i, it in enumerate(items):
             tr = by_i.get(i, {})
             it["title"] = tr.get("title") or it["title_en"]
             it["body"] = tr.get("body") or it["body_en"] or it["title_en"]
         return items
     except Exception as e:
-        print(f"  ! Gemini translation failed: {e}")
+        print(f"  ! Gemini translation failed: {type(e).__name__}: {e}")
         return None
 
 
